@@ -88,10 +88,21 @@ This will take a bit but once it's done you will have your data available by vis
 
 http://localhost/pagetime-analyzer/
 
-It should looks something like this
+It should look something like this
 
 http://vuksan.com/blog/wp-content/uploads/2010/07/pt_overview.png
 http://vuksan.com/blog/wp-content/uploads/2010/07/pt_url_breakdown.png
+
+You will need to run batch_analyzer.php any time you add more data.
+
+
+WARNING
+=======
+
+All the computed data is stored in Memcache infinitely however it will all disappear if you
+restart it. In next release I will try to put it in a more of a permanent storage. I haven't
+decided yet whether it will be something like Membase or CouchDB. Stay tuned.
+
 
 ===============================================================================================
 
