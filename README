@@ -1,0 +1,109 @@
+=== PageTime Analyzer ====
+
+Page time analyzer is a package that allows you to compute per page/URL performance
+information. Currently following stats are supported
+
+- total number of requests
+- aggregate compute time
+- average request time
+- 90th percentile time
+
+
+Requirements
+============
+
+You will need 
+
+- Python 2.4+ 
+- Memcache server
+- PHP with Memcache support (specifically http://pecl.php.net/package/memcache)
+- Web access logs that record request timing. You can find info how to turn it on in Apache
+  here http://vuksan.com/linux/ganglia/index.html#Apache_Traffic_Stats
+
+Installation
+============
+
+Clone the repository. Within the repository there are two directories.
+
+CLI
+===
+
+This directory contains a tool written in Python that parses logs. You will need to change 
+following things.
+
+In parse_log.py:
+   Adjust lesspipe_path to a cat like utility. lesspipe is a wrapper that recognizes compressed
+   archives etc.
+   
+In PageTimeAnalyzer.py
+   Need to adjust following variables
+   
+   self.reg  which is used to match your log files
+   
+   self.ignore_patterns = "(.png|.jpg|.gif)"
+   
+   
+Following are options to parse_log.py
+
+  -l LOG_FILE, --log_file=LOG_FILE
+                        The path to the file to parse
+  -s SERVER, --server=SERVER
+                        Name of the memcache server where data is stored.
+                        Defaults to localhost if none supplied
+  -n INSTANCE_NAME, --instance_name=INSTANCE_NAME
+                        Name of the instance/web server for which we are
+                        processing logs
+
+
+Now run it e.g.
+
+python parse_log.py -l access_log.web01.gz -n web01 -s memcache01 
+
+What this will do is store every response time for non-ignored URLs in memcache. Response times
+are grouped by hour (we can change that in the future). It doesn't actually compute anything.
+
+WEB
+===
+
+Contains the Web GUI and a script that computes all the stats. This has to do with our 
+goal of eventually providing real-time statistics.
+
+To configure the Web GUI you need to create copy the contents of the web directory into 
+your web tree ie. /var/www/html/pagetime-analyzer. Then you need to create a file called
+config.php where you can override any of the values present in config.default.php. In 
+general you just need to point to your memcache server e.g.
+
+<?php
+
+$memcache_server = "memcache01";
+
+?>
+
+
+To actually compute the data you need to invoke the batch_analyzer.php with secret=1 argument ie.
+
+wget -O - http://localhost/pagetime-analyzer/batch_analyzer.php?secret=1
+
+This will take a bit but once it's done you will have your data available by visiting
+
+http://localhost/pagetime-analyzer/
+
+It should looks something like this
+
+http://vuksan.com/blog/wp-content/uploads/2010/07/pt_overview.png
+http://vuksan.com/blog/wp-content/uploads/2010/07/pt_url_breakdown.png
+
+===============================================================================================
+
+LICENSE
+
+All the scripts are licensed under the Apache License, Version 2.0 (the "License") 
+unless otherwise noted; you may not use this file except in compliance with the License. 
+You may obtain a copy of the License at 
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the 
+License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+either express or implied. See the License for the specific language governing permissions 
+and limitations under the License. 
