@@ -1,14 +1,3 @@
-<html>
-<head>
-<title>Page Analysis</title>
-<link rel="stylesheet" href="css/jq.css" type="text/css" media="print, projection, screen" /> 
-<link rel="stylesheet" href="css/style.css" type="text/css" id="" media="print, projection, screen" /> 
-<script language="javascript" type="text/javascript" src="js/jquery.min.js"></script> 
-<script type="text/javascript" src="js/jquery.tablesorter.min.js"></script> 
-
-</head>
-<body>
-
 <?php
 
 error_reporting(E_ALL);
@@ -49,9 +38,17 @@ if ($memcache) {
   
   asort($instances);
 
-  $unprocessed_datetime_key = "unprocessed_date_time";
+  # If datetime is supplied use that one only
+  if ( isset($_GET['datetime']) ) {
+  
+    $date_time_list = $_GET['datetime']; 
+    
+  } else {
 
-  $date_time_list = $memcache->get($unprocessed_datetime_key);
+    $unprocessed_datetime_key = "unprocessed_date_time";
+    $date_time_list = $memcache->get($unprocessed_datetime_key);
+    
+  }
 
   if ( $debug == 0 && $date_time_list !== false ) {
   
@@ -62,7 +59,7 @@ if ($memcache) {
     }
     
     # Delete the key so someone else doesn't attempt to process the datetimes
-    $memcache->delete($unprocessed_datetime_key);
+    $memcache->delete($unprocessed_datetime_key,0);
 
     
     foreach ( $datetime_array as $key => $datetime ) {
@@ -84,7 +81,6 @@ if ($memcache) {
 	print "Computing stats for " . $datetime . "\n";
 	ob_flush();
 	$start_time = time();
-	$write_allstats_to_memcache = 1;
 
 	$url_dur_array = array();
 	$url_num_req = array();
@@ -243,13 +239,15 @@ if ($memcache) {
 	
       } // end of foreach ( $url_num_req["total"]
 
-      if ( $write_allstats_to_memcache == 1 ) {
+      if ( $write_allstats_to_memcache == 1 && isset($all_stats) ) {
 
 	# We want to save the computed data so we don't have to recalculate it later
 	$mc_key = $ALL_STATS_MC_PREFIX . $datetime;
 	$all_stats_string = serialize($all_stats);
 	$memcache->set($mc_key, $all_stats_string , 0, 0);
 
+      } else {
+	print "Not writing data for " . $datetime;
       }
       
       $run_time = time() - $start_time;
@@ -266,10 +264,3 @@ if ($memcache) {
 
 
 ?>
-<script type="text/javascript" id="js">
-    $(document).ready(function() {
-        // call the tablesorter plugin
-        $("table").tablesorter();
-}); </script> 
-</body>
-</html>

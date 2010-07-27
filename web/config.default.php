@@ -24,4 +24,8 @@ $ALL_STATS_MC_PREFIX = "allstats-";
 # This is perhaps superflous but we'll leave it in for now
 $valid_url_patterns = "/.*/";
 
+# While testing set to 0
+$write_allstats_to_memcache = 1;
+
+
 ?>
