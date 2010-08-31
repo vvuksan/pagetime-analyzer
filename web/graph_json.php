@@ -51,15 +51,17 @@ if ($memcache) {
       $total_time = $memcache->get($mc_key);
       
     }
+
+    $mc_key = $URL_REQ_MC_PREFIX . $datetime . "-" . $hash . "-total";
+    $num_requests = $memcache->get($mc_key);
     
     if ( $num_requests_report == 1 ) {
 
-      $mc_key = $URL_REQ_MC_PREFIX . $datetime . "-" . $hash . "-total";
-      $num_requests = $memcache->get($mc_key);
       $values[0][$i] = $num_requests;
+      
     }
 
-    if ( $num_requests !== false ) { 
+    if ( $num_requests !== false && $num_requests_report == 0 ) { 
       $values[1][$i] = $total_time / $num_requests;
     }
 
